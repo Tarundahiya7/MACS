@@ -1,0 +1,13 @@
+{
+  "system": {
+    "total_frames": 64,
+    "page_size": 4,
+    "cpu_quantum": 3,
+    "memory_threshold": 2
+  },
+  "processes": [
+    { "pid": "P1", "arrival_time": 0, "burst_time": 8, "priority": 2, "memory_footprint": 20 },
+    { "pid": "P2", "arrival_time": 3, "burst_time": 5, "priority": 1, "memory_footprint": 15 },
+    { "pid": "P3", "arrival_time": 5, "burst_time": 6, "priority": 3, "memory_footprint": 10 }
+  ]
+}

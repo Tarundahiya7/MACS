@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+/* Fluid type scale */
+:root {
+  --step--1: clamp(0.78rem, 0.77rem + 0.1vw, 0.9rem);
+  --step-0: clamp(0.94rem, 0.92rem + 0.2vw, 1.05rem);
+  --step-1: clamp(1.13rem, 1.08rem + 0.35vw, 1.25rem);
+  --step-2: clamp(1.35rem, 1.26rem + 0.55vw, 1.5rem);
+  --step-3: clamp(1.62rem, 1.46rem + 0.83vw, 1.8rem);
+  --step-4: clamp(1.94rem, 1.69rem + 1.21vw, 2.16rem);
+  --step-5: clamp(2.33rem, 1.95rem + 1.72vw, 2.59rem);
+}
+
+:root {
+  --gantt-lane-bg: #fbfbfb;
+  --gantt-title-color: #111;
+}
+html.dark {
+  --gantt-lane-bg: #111827;
+  --gantt-title-color: #e6eef8;
+}
+
+html, body, #root { height: 100%; }
+body { font-size: var(--step-0); line-height: 1.5; }
+
+.app-container {
+  @apply mx-auto w-full px-4 sm:px-6 lg:px-8;
+  max-width: min(96rem, 100%);
+}
+
+.card {
+  @apply rounded-2xl border border-black/10 dark:border-white/10 bg-white/70 dark:bg-white/5 backdrop-blur;
+}
+
+.table-wrap {
+  @apply overflow-x-auto -mx-4 sm:mx-0;
+  padding-bottom: 0.5rem;
+}
+
+* { transition: background-color .15s ease, color .15s ease, border-color .15s ease; }
+
+:root {
+  --gantt-lane-bg: #fbfbfb;
+  --gantt-title-color: #111;
+}
+html.dark {
+  --gantt-lane-bg: #0b1220;
+  --gantt-title-color: #e6eef8;
+}
+
+.gant-chart1 {
+  align-items: center;
+}
+
+.zindex{
+  z-index: 10;
+}
+
+.heading{
+  margin-top: 20px;
+  margin-bottom: 30px;
+}
+
+.buttons{
+  margin-left: 250px;
+  gap: 35px;
+}
+
+.logo{
+  
+}

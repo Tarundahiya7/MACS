@@ -1,0 +1,47 @@
+[
+  {
+    "model": "Word2Vec",
+    "success": true,
+    "shape": [
+      4,
+      100
+    ]
+  },
+  {
+    "model": "FastText",
+    "success": true,
+    "shape": [
+      4,
+      300
+    ]
+  },
+  {
+    "model": "GloVe",
+    "success": false,
+    "error": "No valid embedding method found."
+  },
+  {
+    "model": "BERT",
+    "success": true,
+    "shape": [
+      4,
+      768
+    ]
+  },
+  {
+    "model": "GPT-2",
+    "success": true,
+    "shape": [
+      4,
+      1024
+    ]
+  },
+  {
+    "model": "TextGCN",
+    "success": true,
+    "shape": [
+      4,
+      128
+    ]
+  }
+]
