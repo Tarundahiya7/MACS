@@ -1,11 +1,9 @@
-// frontend/src/components/ConfigForm.jsx
 import { Database, BarChart2, Plus, Trash2, MoreVertical } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
 const blankSystem = { total_frames: '', page_size: '', cpu_quantum: '', memory_threshold: '', cpu_idle_gap: '1' };
 const blankProcess = (i = 1) => ({ pid: `P${i}`, arrival_time: '', burst_time: '', priority: '', pages_count: '' });
-
 export default function ConfigForm({ system, setSystem, processes, setProcesses }) {
   const [openMenu, setOpenMenu] = useState(false);
   const menuRef = useRef(null);
@@ -13,17 +11,13 @@ export default function ConfigForm({ system, setSystem, processes, setProcesses 
 
   const [menuStyle, setMenuStyle] = useState({ top: 0, left: 0 });
   const [isDark, setIsDark] = useState(false);
-  const MENU_WIDTH = 320; // tweak width if you want wider/narrower
+  const MENU_WIDTH = 320;
 
-  // detect current dark mode by checking <html> class (supports 'class' strategy)
   useEffect(() => {
     if (typeof document === 'undefined') return;
     const root = document.documentElement;
-
     const update = () => setIsDark(root.classList.contains('dark'));
     update();
-
-    // Observe changes to class attribute so portal stays in sync with theme toggles
     const mo = new MutationObserver((mutations) => {
       for (const m of mutations) {
         if (m.attributeName === 'class') {
@@ -33,28 +27,22 @@ export default function ConfigForm({ system, setSystem, processes, setProcesses 
       }
     });
     mo.observe(root, { attributes: true, attributeFilter: ['class'] });
-
     return () => mo.disconnect();
   }, []);
 
-  // compute menu position relative to the trigger button
   const updateMenuPosition = () => {
     const btn = buttonRef.current;
     if (!btn) return;
     const rect = btn.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const margin = 12;
-
-    // prefer aligning right edge of the menu with the right edge of the button
     let left = rect.right - MENU_WIDTH;
-    if (left < margin) left = margin; // prevent left overflow
-    if (left + MENU_WIDTH > viewportWidth - margin) left = viewportWidth - MENU_WIDTH - margin; // prevent right overflow
-
-    const top = rect.bottom + 8; // menu below the button
+    if (left < margin) left = margin;
+    if (left + MENU_WIDTH > viewportWidth - margin) left = viewportWidth - MENU_WIDTH - margin;
+    const top = rect.bottom + 8;
     setMenuStyle({ top, left });
   };
 
-  // close when clicking outside the menu or button, and update on scroll/resize
   useEffect(() => {
     function handleDown(e) {
       if (!openMenu) return;
@@ -73,9 +61,7 @@ export default function ConfigForm({ system, setSystem, processes, setProcesses 
     }
     document.addEventListener('mousedown', handleDown);
     window.addEventListener('resize', handleScrollResize);
-    // listen in capture phase to catch scrolls in any scrollable ancestor
     window.addEventListener('scroll', handleScrollResize, true);
-
     return () => {
       document.removeEventListener('mousedown', handleDown);
       window.removeEventListener('resize', handleScrollResize);
@@ -83,11 +69,9 @@ export default function ConfigForm({ system, setSystem, processes, setProcesses 
     };
   }, [openMenu]);
 
-  // recalc position when menu opens
   useEffect(() => {
     if (openMenu) {
       updateMenuPosition();
-      // small retry for cases where layout changes just after open
       const t = setTimeout(updateMenuPosition, 40);
       return () => clearTimeout(t);
     }
@@ -100,18 +84,17 @@ export default function ConfigForm({ system, setSystem, processes, setProcesses 
   const addProc = () => setProcesses((prev) => [...prev, blankProcess(prev.length + 1)]);
   const removeProc = (indexToRemove) => setProcesses((prev) => prev.filter((_, i) => i !== indexToRemove));
 
-  // Portal content uses Tailwind classes and respects dark mode by applying 'dark' on the outer wrapper
   const MenuPortal = (
     <div
       ref={menuRef}
       role="dialog"
       aria-modal="false"
-      className={`${isDark ? 'dark' : ''}`} // ensure dark: classes inside work
+      className={`${isDark ? 'dark' : ''}`}
       style={{
         position: 'fixed',
-        top: `${menuStyle.top}px`,
-        left: `${menuStyle.left}px`,
-        width: `${MENU_WIDTH}px`,
+        top: menuStyle.top,
+        left: menuStyle.left,
+        width: MENU_WIDTH,
         zIndex: 9999,
         pointerEvents: 'auto',
       }}
@@ -124,7 +107,7 @@ export default function ConfigForm({ system, setSystem, processes, setProcesses 
         <div className="grid grid-cols-1 gap-3">
           {Object.entries(system).map(([k, v]) => (
             <label key={k} className="grid text-sm gap-1">
-              <span className="opacity-80 capitalize">{k.replaceAll('_', ' ')}</span>
+              <span className="opacity-80 capitalize">{String(k).replace(/_/g, ' ')}</span>
               <input
                 value={v}
                 onChange={(e) => updateSystem(k, e.target.value)}
@@ -140,7 +123,6 @@ export default function ConfigForm({ system, setSystem, processes, setProcesses 
 
   return (
     <div className="grid gap-6 relative ">
-      {/* Three-dots menu trigger */}
       <div className="absolute top-5 right-4 z-30 ">
         <button
           ref={buttonRef}
@@ -154,10 +136,8 @@ export default function ConfigForm({ system, setSystem, processes, setProcesses 
         </button>
       </div>
 
-      {/* Render portal into body so it can't be overlapped or clipped by siblings */}
       {openMenu && typeof document !== 'undefined' && createPortal(MenuPortal, document.body)}
 
-      {/* Process Section */}
       <section className="card p-5 relative z-10">
         <div className="flex items-center justify-between mb-4 pr-10">
           <h3 className="text-lg font-semibold flex items-center gap-2"><BarChart2 size={18}/> Processes</h3>
@@ -170,8 +150,8 @@ export default function ConfigForm({ system, setSystem, processes, setProcesses 
           <table className="min-w-full text-sm border border-black/10 dark:border-white/10 rounded-xl overflow-hidden">
             <thead className="bg-black/5 dark:bg-white/10">
               <tr>
-                {['pid','arrival_time','burst_time','priority','pages_count','actions'].map((h) => (
-                  <th key={h} className="text-left p-2 capitalize">{h.replaceAll('_',' ')}</th>
+                {['pid','arrival_time','burst_time','pages_count','actions'].map((h) => (
+                  <th key={h} className="text-left p-2 capitalize">{String(h).replace(/_/g, ' ')}</th>
                 ))}
               </tr>
             </thead>
@@ -182,7 +162,7 @@ export default function ConfigForm({ system, setSystem, processes, setProcesses 
                     <input className="px-2 py-1 rounded bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/10 w-28"
                            value={p.pid} onChange={(e) => updateProcess(i,'pid', e.target.value)} />
                   </td>
-                  {['arrival_time','burst_time','priority','pages_count'].map((k) => (
+                  {['arrival_time','burst_time','pages_count'].map((k) => (
                     <td key={k} className="p-2">
                       <input type="number"
                              className="px-2 py-1 rounded bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/10 w-36"

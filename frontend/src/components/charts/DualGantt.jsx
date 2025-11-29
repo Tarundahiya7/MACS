@@ -5,11 +5,6 @@ import { useTheme } from "../../theme/useTheme";
 import iconFullscreen from "../../assets/fullscreen.svg";
 import iconExit from "../../assets/exitfullscreen.svg";
 
-/* ========================================================
-   Helpers
-======================================================== */
-
-/* A consistent idle detector — same logic used in Results.jsx */
 function isIdlePid(pid) {
   if (pid == null) return true;
   const s = String(pid).trim();
@@ -18,11 +13,9 @@ function isIdlePid(pid) {
   return lower === "idle" || lower === "0" || lower === "-1";
 }
 
-/* Convert trace list → timeline segments */
 function traceToTimeline(trace = []) {
   if (!Array.isArray(trace)) return [];
 
-  // group events by integer time (preserve order within same-time group from the array)
   const groups = new Map();
   for (const ev of trace) {
     if (!ev) continue;
@@ -32,34 +25,29 @@ function traceToTimeline(trace = []) {
     groups.get(t).push(ev);
   }
 
-  const times = Array.from(groups.keys()).sort((a,b)=>a-b);
+  const times = Array.from(groups.keys()).sort((a, b) => a - b);
   const timeline = [];
   let curPid = null;
   let curStart = null;
 
-  // process groups in time order. For each time, first handle stopped events, then running.
   for (const t of times) {
     const events = groups.get(t) || [];
 
-    // FIRST: process stopped events to close current slice if matching
-    for (const e of events.filter(x => x.event === 'stopped')) {
+    for (const e of events.filter((x) => x.event === "stopped")) {
       const pid = e.pid != null ? String(e.pid) : null;
       if (curPid !== null && pid === curPid) {
         timeline.push([String(curPid), Number(curStart), Number(t)]);
         curPid = null;
         curStart = null;
       }
-      // otherwise ignore stopped for other pid
     }
 
-    // THEN: process running events — if multiple running events at same time, use first
-    for (const e of events.filter(x => x.event === 'running')) {
+    for (const e of events.filter((x) => x.event === "running")) {
       const pid = e.pid != null ? String(e.pid) : null;
       if (curPid === null) {
         curPid = pid;
         curStart = Number(t);
       } else if (curPid !== pid) {
-        // close previous and start a new one at same time
         timeline.push([String(curPid), Number(curStart), Number(t)]);
         curPid = pid;
         curStart = Number(t);
@@ -67,7 +55,6 @@ function traceToTimeline(trace = []) {
     }
   }
 
-  // if there's an open slice, close at last time + 1
   if (curPid !== null) {
     const last = times.length ? Math.max(...times) : 0;
     timeline.push([String(curPid), Number(curStart), Number(last + 1)]);
@@ -75,14 +62,10 @@ function traceToTimeline(trace = []) {
   return timeline;
 }
 
-
-
-/* Normalize many shapes → array-of-arrays */
 function normalizeTimeline(tl = []) {
   if (!Array.isArray(tl) || tl.length === 0) return [];
   const first = tl[0];
 
-  // array of arrays
   if (Array.isArray(first)) {
     return tl
       .map((arr) => {
@@ -97,9 +80,10 @@ function normalizeTimeline(tl = []) {
       .filter(Boolean);
   }
 
-  // array of objects
   if (typeof first === "object") {
-    const looksTrace = tl.every((o) => o && "time" in o && "pid" in o && "event" in o);
+    const looksTrace = tl.every(
+      (o) => o && "time" in o && "pid" in o && "event" in o
+    );
     if (looksTrace) return traceToTimeline(tl);
 
     return tl
@@ -133,7 +117,6 @@ function normalizeTimeline(tl = []) {
   return [];
 }
 
-/* Convert normalized → renderable objects */
 function normalizeForRender(tl = []) {
   return tl.map(([pid, s, e]) => ({
     pid,
@@ -143,7 +126,6 @@ function normalizeForRender(tl = []) {
   }));
 }
 
-/* Utility to color pids */
 function hashTo360(s = "") {
   let h = 0;
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360;
@@ -153,13 +135,15 @@ function hashTo360(s = "") {
 function twoHuesForPid(pid, hueOffset = 0, isDark = false) {
   const h = (hashTo360(String(pid)) + hueOffset) % 360;
   if (isDark)
-    return { light: `hsl(${h} 68% 58%)`, dark: `hsl(${(h + 8) % 360} 68% 36%)` };
-  return { light: `hsl(${h} 72% 62%)`, dark: `hsl(${(h + 8) % 360} 64% 44%)` };
+    return {
+      light: `hsl(${h} 68% 58%)`,
+      dark: `hsl(${(h + 8) % 360} 68% 36%)`,
+    };
+  return {
+    light: `hsl(${h} 72% 62%)`,
+    dark: `hsl(${(h + 8) % 360} 64% 44%)`,
+  };
 }
-
-/* ========================================================
-   Main Component
-======================================================== */
 
 export default function DualGantt({
   baseline = [],
@@ -170,14 +154,12 @@ export default function DualGantt({
   const { mode } = useTheme?.() ?? { mode: "light" };
   const isDark = mode === "dark";
 
-  /* Normalize incoming timelines */
   const baseArr = useMemo(() => normalizeTimeline(baseline), [baseline]);
   const memArr = useMemo(() => normalizeTimeline(marr), [marr]);
 
   const base = useMemo(() => normalizeForRender(baseArr), [baseArr]);
   const mem = useMemo(() => normalizeForRender(memArr), [memArr]);
 
-  /* Determine lane order */
   const inferredProcesses = useMemo(() => {
     if (Array.isArray(processesOrder) && processesOrder.length)
       return processesOrder.map(String).filter((p) => !isIdlePid(p));
@@ -196,7 +178,6 @@ export default function DualGantt({
     return order;
   }, [processesOrder, base, mem]);
 
-  /* Infer baseline quanta if not provided */
   const baselineQuantaMap = useMemo(() => {
     if (propBaselineQuanta && typeof propBaselineQuanta === "object") {
       const out = {};
@@ -221,7 +202,6 @@ export default function DualGantt({
     return map;
   }, [base, inferredProcesses, propBaselineQuanta]);
 
-  /* Layout */
   const pxPerTime = 28;
   const tailExtraTime = 2.5;
   const laneH = 50;
@@ -241,7 +221,6 @@ export default function DualGantt({
   const innerW = width - padding.left - padding.right;
   const svgHeight = padding.top + lanes * laneH + padding.bottom;
 
-  /* Tooltip state */
   const containerRef = useRef(null);
   const [tooltip, setTooltip] = useState({
     visible: false,
@@ -267,7 +246,6 @@ export default function DualGantt({
     .map((pid) => `${pid}:${baselineQuantaMap[pid] ?? 1}`)
     .join("  •  ");
 
-  /* Theme colors */
   const containerBg = isDark ? "rgba(6,8,15,0.6)" : "#ffffff";
   const panelBorder = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
   const labelColor = isDark ? "#E6EEF8" : "#111827";
@@ -276,16 +254,11 @@ export default function DualGantt({
   const gridLine = isDark ? "rgba(255,255,255,0.03)" : "#f3f3f3";
   const timeText = isDark ? "#9AA8C3" : "#666";
 
-  /* Gradients */
   const gradientDefs = (
     <defs>
       {inferredProcesses.map((pid) => {
         const { light: bLight, dark: bDark } = twoHuesForPid(pid, 6, isDark);
-        const { light: mLight, dark: mDark } = twoHuesForPid(
-          pid,
-          150,
-          isDark
-        );
+        const { light: mLight, dark: mDark } = twoHuesForPid(pid, 150, isDark);
         return (
           <React.Fragment key={pid}>
             <linearGradient id={`b-${pid}`} x1="0" x2="1">
@@ -305,7 +278,6 @@ export default function DualGantt({
     </defs>
   );
 
-  /* Single timeline renderer */
   const renderSingleTimeline = (data, chartFamily = "b") => (
     <svg
       width={width}
@@ -315,15 +287,26 @@ export default function DualGantt({
     >
       {gradientDefs}
 
-      {/* Time ticks */}
       <g transform={`translate(${padding.left}, ${padding.top + 14})`}>
         {Array.from({ length: Math.floor(maxTime) + 2 }).map((_, i) => {
           const t = i;
           const x = (t / (maxTime + tailExtraTime)) * innerW;
           return (
             <g key={i} transform={`translate(${x},0)`}>
-              <line x1={0} y1={0} x2={0} y2={lanes * laneH + 12} stroke={gridLine} />
-              <text x={0} y={-10} fontSize={11} fill={timeText} textAnchor="middle">
+              <line
+                x1={0}
+                y1={0}
+                x2={0}
+                y2={lanes * laneH + 12}
+                stroke={gridLine}
+              />
+              <text
+                x={0}
+                y={-10}
+                fontSize={11}
+                fill={timeText}
+                textAnchor="middle"
+              >
                 {t}
               </text>
             </g>
@@ -331,7 +314,6 @@ export default function DualGantt({
         })}
       </g>
 
-      {/* Lanes */}
       {inferredProcesses.map((pid, idx) => {
         const y = padding.top + 14 + idx * laneH;
         return (
@@ -358,14 +340,16 @@ export default function DualGantt({
         );
       })}
 
-      {/* Segments */}
       <g transform={`translate(${padding.left}, ${padding.top + 14})`}>
         {data.map((seg, i) => {
           if (!seg) return null;
           if (isIdlePid(seg.pid)) return null;
 
           const x = (seg.start / (maxTime + tailExtraTime)) * innerW;
-          const w = Math.max(8, (seg.len / (maxTime + tailExtraTime)) * innerW);
+          const w = Math.max(
+            8,
+            (seg.len / (maxTime + tailExtraTime)) * innerW
+          );
           const pidIdx = inferredProcesses.indexOf(seg.pid);
           if (pidIdx < 0) return null;
 
@@ -382,7 +366,7 @@ export default function DualGantt({
                 width={w}
                 height={laneH - 12}
                 rx={12}
-                fill={`url(#${chartFamily}-${seg.pid})`}
+                fill={`url(#${gradId})`}
                 stroke={isDark ? "rgba(255,255,255,0.02)" : "#111"}
                 strokeOpacity={0.06}
                 filter={isHovered ? "url(#softShadow)" : undefined}
@@ -399,7 +383,8 @@ export default function DualGantt({
                   cursor: "pointer",
                   transformOrigin: "left center",
                   transform: isHovered ? "translateY(-4px) scale(1.02)" : "none",
-                  transition: "transform .14s cubic-bezier(.2,.9,.2,1), filter .14s, opacity .14s",
+                  transition:
+                    "transform .14s cubic-bezier(.2,.9,.2,1), filter .14s, opacity .14s",
                 }}
               />
               <text
@@ -420,7 +405,6 @@ export default function DualGantt({
     </svg>
   );
 
-  /* Fullscreen toggle */
   const [isFullscreen, setIsFullscreen] = useState(false);
   const toggleFullscreen = async () => {
     const el = containerRef.current;
@@ -439,10 +423,6 @@ export default function DualGantt({
     }
   };
 
-  /* ========================================================
-     Render Component
-  ======================================================== */
-
   return (
     <div
       ref={containerRef}
@@ -456,7 +436,6 @@ export default function DualGantt({
         overflow: "auto",
       }}
     >
-      {/* Fullscreen button */}
       <div style={{ position: "absolute", top: 12, right: 12, zIndex: 90 }}>
         <img
           src={isFullscreen ? iconExit : iconFullscreen}
@@ -472,15 +451,15 @@ export default function DualGantt({
         />
       </div>
 
-      {/* Header */}
-      <h3 style={{ margin: 0, fontSize: 20, fontWeight: 900, color: labelColor }}>
+      <h3
+        style={{ margin: 0, fontSize: 20, fontWeight: 900, color: labelColor }}
+      >
         Baseline vs Memory-Aware RR
       </h3>
       <div style={{ marginTop: 6, fontSize: 13, color: subLabel }}>
         Compare baseline scheduling vs memory-aware scheduling
       </div>
 
-      {/* Baseline */}
       <div style={{ marginTop: 18 }}>
         <div style={{ paddingLeft: padding.left, marginBottom: 8 }}>
           <strong style={{ fontSize: 18, color: labelColor }}>Baseline</strong>
@@ -489,24 +468,24 @@ export default function DualGantt({
           </div>
         </div>
         <div style={{ overflowX: "auto", paddingBottom: 12 }}>
-          <div style={{ width }}>{renderSingleTimeline(base, "b")}</div>
+          <div style={{ width: width }}>{renderSingleTimeline(base, "b")}</div>
         </div>
       </div>
 
-      {/* Memory-Aware */}
       <div style={{ marginTop: 50 }}>
         <div style={{ paddingLeft: padding.left, marginBottom: 8 }}>
-          <strong style={{ fontSize: 18, color: labelColor }}>Memory-Aware</strong>
+          <strong style={{ fontSize: 18, color: labelColor }}>
+            Memory-Aware
+          </strong>
           <div style={{ fontSize: 12, color: subLabel, marginTop: 4 }}>
             Quanta — {quantemapStr}
           </div>
         </div>
         <div style={{ overflowX: "auto", paddingBottom: 12 }}>
-          <div style={{ width }}>{renderSingleTimeline(mem, "m")}</div>
+          <div style={{ width: width }}>{renderSingleTimeline(mem, "m")}</div>
         </div>
       </div>
 
-      {/* Tooltip */}
       {tooltip.visible && (
         <div
           style={{
@@ -538,7 +517,6 @@ DualGantt.propTypes = {
   baseline_quanta: PropTypes.object,
 };
 
-/* GCD helper */
 function gcd(a, b) {
   a = Math.abs(a);
   b = Math.abs(b);

@@ -113,7 +113,7 @@ export default function App() {
 
         if (!data) throw new Error('Invalid response from baseline API');
         setBaseline({ ...data, input: payload });
-        saveRunLocal(`Run ${new Date().toLocaleString()} (Baseline)`, payload, { baseline: data });
+        saveRunLocal(Run `${new Date().toLocaleString()}` (Baseline), payload, { baseline: data });
       } else if (mode === 'memory') {
         setBaseline(null);
 
@@ -123,7 +123,7 @@ export default function App() {
 
         if (!data) throw new Error('Invalid response from memory-aware API');
         setMemoryAware({ ...data, input: payload });
-        saveRunLocal(`Run ${new Date().toLocaleString()} (Memory)`, payload, { memoryAware: data });
+        saveRunLocal(Run `${new Date().toLocaleString()}` (Memory), payload, { memoryAware: data });
       } else if (mode === 'compare') {
         const resp = await api.compareSchedulers(payload);
         const data = resp?.data ?? null;
@@ -133,7 +133,7 @@ export default function App() {
         setBaseline({ ...data.baseline, input: payload });
         setMemoryAware({ ...data.memory_aware, input: payload });
         saveRunLocal(
-          `Compare ${new Date().toLocaleString()}`,
+          Compare `${new Date().toLocaleString()}`,
           payload,
           { baseline: data.baseline, memoryAware: data.memory_aware }
         );
@@ -173,7 +173,7 @@ export default function App() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `scheduler_input_${Date.now()}.json`;
+      a.download = scheduler_input_`${Date.now()}`.json;
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
@@ -207,8 +207,7 @@ export default function App() {
           </div>
 
 
-          <div className="flex flex-wrap items-center gap-2 relative">
-            {/* three-dots dropdown */}
+          {/* <div className="flex flex-wrap items-center gap-2 relative">
             <div ref={menuRef} className="relative">
               <button
                 aria-haspopup="true"
@@ -224,7 +223,6 @@ export default function App() {
                 <div className="absolute right-0 mt-2 w-48 bg-gray-900 rounded-xl shadow-lg z-50 ring-1 ring-white/5">
                   <div className="py-1">
                     <div className=" py-1">
-                      {/* Use the existing ExcelUpload component but render it in a compact mode by passing a prop. If ExcelUpload doesn't accept props, you can wrap it here or create a small input. */}
                       <ExcelUpload onData={importFromExcel} compact />
                     </div>
 
@@ -236,18 +234,18 @@ export default function App() {
                       <span className="text-slate-200">Export JSON</span>
                     </button>
 
-                    {/* <button
+                    <button
                       onClick={() => { navigator.clipboard?.writeText(apiUrl || ''); setMenuOpen(false); alert('API URL copied to clipboard'); }}
                       className="w-full text-left px-3 py-2 text-sm hover:bg-white/5 rounded-md flex items-center gap-2"
                     >
                       <Save size={16} />
                       <span>Copy API URL</span>
-                    </button> */}
+                    </button>
                   </div>
                 </div>
               )}
             </div>
-          </div>
+          </div> */}
         </div>
       </header>
 
@@ -281,12 +279,12 @@ export default function App() {
             <GitCompare size={16} /> Run Both & Compare
           </button>
 
-          <button
+          {/* <button
             onClick={submitConfig}
             className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200"
           >
             <Save size={16} /> Save Input to Backend
-          </button>
+          </button> */}
         </div>
 
         {(baseline || memoryAware) ? (

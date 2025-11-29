@@ -59,11 +59,12 @@ html.dark {
 .heading{
   margin-top: 20px;
   margin-bottom: 30px;
+  
 }
 
 .buttons{
-  margin-left: 250px;
-  gap: 35px;
+  margin-left: 275px;
+  gap: 50px;
 }
 
 .logo{
