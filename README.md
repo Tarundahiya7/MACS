@@ -9,10 +9,7 @@ MACS is a simulation and visualization tool that compares a standard CPU schedul
 ## 3. Features
 - Interactive configuration of system parameters and process list  
 - Baseline and Memory-Aware CPU scheduling simulations  
-- Visualizations including CPU Utilization Graphs, Per-PID Stacked Timeline, Dual Gantt Charts, Performance Comparison  
-- Local run history saving  
-- Excel input import and JSON export  
-- Dark/Light theme  
+- Visualizations including CPU Utilization Graphs, Per-PID Stacked Timeline, Dual Gantt Charts, Performance Comparison   
 - FastAPI backend with simulation engine
 
 ## 4. Installation
@@ -25,43 +22,22 @@ cd MACS
 
 ## 5. Usage
 
-### Backend
+### 6 Backend
 ```
 cd backend
 python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-### Frontend
+### 7 Frontend
 ```
 cd frontend
 npm install
 npm run dev
 ```
 
-## 6. Configuration
-JSON input structure for simulation:
-```
-{
-  "system": { ... },
-  "processes": [ ... ]
-}
-```
 
-## 7. Project Structure
-```
-MACS/
-├── backend/
-├── frontend/
-└── README.md
-```
-
-## 8. Technologies Used
+## 8 Technologies Used
 **Frontend:** React.js, Tailwind CSS, Recharts  
-**Backend:** FastAPI, Pydantic, SQLAlchemy  
-**Other:** JSON, Excel Import  
+**Backend:** FastAPI, Python, JSON
 
-## 9. Contributing
-1. Fork  
-2. Create branch  
-3. Commit  
-4. Submit PR
+
